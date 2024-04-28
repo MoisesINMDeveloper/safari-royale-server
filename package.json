@@ -2,7 +2,7 @@
   "name": "safari_royale_server",
   "version": "0.0.1",
   "description": "Servidor para Safari Royale, servicio de apuestas.",
-  "main": "src/app.js",
+  "main": "src/app.ts",
   "scripts": {
     "dev": "tsnd --respawn --clear src/server.ts",
     "build": "rimraf ./dist && tsc",
