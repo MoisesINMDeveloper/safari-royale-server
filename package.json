@@ -1,0 +1,21 @@
+{
+  "name": "safari_royale_server",
+  "version": "0.0.1",
+  "description": "Servidor para Safari Royale, servicio de apuestas.",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "tsnd --respawn --clear src/server.ts",
+    "build": "rimraf ./dist && tsc",
+    "start": "node dist/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoisesINMDeveloper/safari-royale-server.git"
+  },
+  "author": "Moises Israel Navarro Mendoza",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MoisesINMDeveloper/safari-royale-server/issues"
+  },
+  "homepage": "https://github.com/MoisesINMDeveloper/safari-royale-server#readme"
+}
