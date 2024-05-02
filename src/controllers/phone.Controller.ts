@@ -11,7 +11,7 @@ export const createPhone = async (
       res.status(400).json({ error: `The code is required` });
       return;
     }
-    const phone = await prisma.phone.create({
+    const phone = await prisma.create({
       data: {
         code,
       },
@@ -28,7 +28,7 @@ export const getAllPhone = async (
   res: Response
 ): Promise<void> => {
   try {
-    const phones = await prisma.phone.findMany();
+    const phones = await prisma.findMany();
     res.status(200).json(phones);
   } catch (error) {
     console.error(error);
@@ -42,7 +42,7 @@ export const getPhoneById = async (
 ): Promise<void> => {
   const phone_id: number = parseInt(req.params.id);
   try {
-    const phone = await prisma.phone.findUnique({ where: { id: phone_id } });
+    const phone = await prisma.findUnique({ where: { id: phone_id } });
     if (!phone) {
       res.status(404).json({ error: "Phone not found" });
       return;
@@ -66,7 +66,7 @@ export const updatePhone = async (
       dataToUpdate.code = code;
     }
 
-    const phone = await prisma.phone.update({
+    const phone = await prisma.update({
       where: {
         id: phone_id,
       },
@@ -85,7 +85,7 @@ export const deletePhone = async (
 ): Promise<void> => {
   const phone_id: number = parseInt(req.params.id);
   try {
-    await prisma.phone.delete({ where: { id: phone_id } });
+    await prisma.delete({ where: { id: phone_id } });
     res.status(200).json({ message: `The phone ${phone_id} has been deleted` });
   } catch (error) {
     console.error(error);

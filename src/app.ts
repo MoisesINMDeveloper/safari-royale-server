@@ -3,7 +3,7 @@ import express from "express";
 import authRoutes from "./routes/authRoutes";
 import bankRoutes from "./routes/bankRoutes";
 import usersRoutes from "./routes/usersRoutes";
-import autenticateToken from "./middleware/autenticateToken";
+import phoneRoutes from "./routes/phoneRoutes";
 
 dotenv.config();
 
@@ -14,7 +14,7 @@ app.use(express.json());
 // Routes
 
 app.use("/auth", authRoutes);
-// app.use("/", autenticateToken);
+app.use("/", phoneRoutes);
 app.use("/", bankRoutes);
 app.use("/users", usersRoutes);
 // Construir api rest para user

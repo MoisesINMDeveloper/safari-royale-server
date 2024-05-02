@@ -14,56 +14,63 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.updateUser = exports.getUserById = exports.getAllUsers = exports.createUser = void 0;
 const password_service_1 = require("../services/password.service");
-const user_prisma_1 = __importDefault(require("../models/user.prisma"));
+const client_1 = require("@prisma/client");
+const bank_prisma_1 = __importDefault(require("../models/bank.prisma"));
+const auth_service_1 = require("../services/auth.service"); // Importa la función para generar tokens
+const prisma = new client_1.PrismaClient();
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
-        const { username, name, email, password } = req.body;
-        if (!username) {
-            res.status(400).json({ message: "The username is required" });
-            return;
-        }
-        if (!name) {
-            res.status(400).json({ message: "The name is required" });
-            return;
-        }
-        if (!email) {
-            res.status(400).json({ message: "The email is required" });
-            return;
-        }
-        if (!password) {
-            res.status(400).json({ message: "The password is required" });
+        const { username, name, email, dni, password, bank, phone, verified } = req.body;
+        if (!username ||
+            !name ||
+            !email ||
+            !password ||
+            !dni ||
+            !verified ||
+            !bank ||
+            !phone) {
+            res.status(400).json({ message: "Missing required fields" });
             return;
         }
         const hashedPassword = yield (0, password_service_1.hashPassword)(password);
-        const user = yield user_prisma_1.default.create({
+        const idBank = yield bank_prisma_1.default.findUnique({
+            where: {
+                id: bank,
+            },
+        });
+        const user = yield prisma.user.create({
             data: {
                 username,
                 name,
                 email,
-                password,
+                password: hashedPassword,
+                dni,
+                verified,
+                bank: {
+                    connect: {
+                        id: idBank === null || idBank === void 0 ? void 0 : idBank.id,
+                    },
+                },
+                phone,
             },
         });
-        res.status(201).json(user);
+        // Genera el token
+        const token = (0, auth_service_1.generateToken)(user);
+        // Agrega el token a la respuesta
+        res.status(201).json(Object.assign(Object.assign({}, user), { token }));
     }
     catch (error) {
-        console.error("Error try again later: ", error);
-        let statusCode = 500;
-        let errorMessage = "There was an error try later";
-        // Verifica si el error es debido a un correo electrónico duplicado
-        if ((error === null || error === void 0 ? void 0 : error.code) === "P2002" && ((_b = (_a = error === null || error === void 0 ? void 0 : error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes("email"))) {
-            statusCode = 400;
-            errorMessage = "El email ingresado ya existe.";
-        }
-        // Enviar respuesta con el código de estado y mensaje adecuados
-        res.status(statusCode).json({ error: errorMessage });
+        console.error("Error creating user:", error);
+        res.status(500).json({ error: "Error creating user" });
     }
 });
 exports.createUser = createUser;
+// El resto de tus controladores aquí...
 const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield user_prisma_1.default.findMany();
-        res.status(200).json(users);
+        const users = yield prisma.user.findMany();
+        const usersWithoutPassword = users.map((user) => (Object.assign(Object.assign({}, user), { token: user.verified ? (0, auth_service_1.generateToken)(user) : undefined, password: undefined })));
+        res.status(200).json(usersWithoutPassword);
     }
     catch (error) {
         console.log(error);
@@ -74,12 +81,13 @@ exports.getAllUsers = getAllUsers;
 const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = parseInt(req.params.id);
     try {
-        const user = yield user_prisma_1.default.findUnique({ where: { id: userId } });
+        const user = yield prisma.user.findUnique({ where: { id: userId } });
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
         }
-        res.status(200).json(user);
+        const userWithoutPassword = Object.assign(Object.assign({}, user), { token: user.verified ? (0, auth_service_1.generateToken)(user) : undefined, password: undefined });
+        res.status(200).json(userWithoutPassword);
     }
     catch (error) {
         console.log(error);
@@ -88,41 +96,58 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.getUserById = getUserById;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _a, _b;
     const userId = parseInt(req.params.id);
-    const { username, name, email, password } = req.body;
+    const { username, email, password, dni, bankId, phoneId, verified } = req.body;
     try {
-        let dataToUpdate = Object.assign({}, req.body);
+        let dataToUpdate = {}; // Objeto para almacenar los datos a actualizar
+        // Verificar y actualizar el nombre de usuario
         if (username) {
             dataToUpdate.username = username;
         }
-        if (name) {
-            dataToUpdate.name = name;
-        }
+        // Verificar y actualizar el correo electrónico
         if (email) {
             dataToUpdate.email = email;
         }
+        // Verificar y actualizar la contraseña
         if (password) {
             const hashedPassword = yield (0, password_service_1.hashPassword)(password);
             dataToUpdate.password = hashedPassword;
         }
-        const user = yield user_prisma_1.default.update({
-            where: {
-                id: userId,
-            },
-            data: dataToUpdate,
+        // Verificar y actualizar el número de identificación (dni)
+        if (dni) {
+            dataToUpdate.dni = dni;
+        }
+        // Verificar y actualizar el ID del banco
+        if (bankId) {
+            dataToUpdate.bankId = bankId;
+        }
+        // Verificar y actualizar el ID del teléfono
+        if (phoneId) {
+            dataToUpdate.phoneId = phoneId;
+        }
+        // Verificar y actualizar el estado de verificación
+        if (verified !== undefined) {
+            dataToUpdate.verified = verified;
+        }
+        // Actualizar los datos del usuario utilizando Prisma
+        const updatedUser = yield prisma.user.update({
+            where: { id: userId }, // Especificar el usuario que se actualizará
+            data: dataToUpdate, // Pasar los datos a actualizar
         });
-        res.status(200).json(user);
+        // Responder con el usuario actualizado
+        res.status(200).json(updatedUser);
     }
     catch (error) {
-        if ((error === null || error === void 0 ? void 0 : error.code) === "P2002" && ((_d = (_c = error === null || error === void 0 ? void 0 : error.meta) === null || _c === void 0 ? void 0 : _c.target) === null || _d === void 0 ? void 0 : _d.includes("email"))) {
+        // Manejar errores
+        if ((error === null || error === void 0 ? void 0 : error.code) === "P2002" && ((_b = (_a = error === null || error === void 0 ? void 0 : error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes("email"))) {
             res.status(400).json({ error: "The email entered already exists" });
         }
         else if ((error === null || error === void 0 ? void 0 : error.code) === "P2025") {
             res.status(404).json("User not found");
         }
         else {
-            console.log(error);
+            console.error("Error updating user:", error);
             res.status(500).json({ error: "There was an error, try later" });
         }
     }
@@ -131,7 +156,7 @@ exports.updateUser = updateUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = parseInt(req.params.id);
     try {
-        yield user_prisma_1.default.delete({ where: { id: userId } });
+        yield prisma.user.delete({ where: { id: userId } });
         res.status(200).json({ message: `The user ${userId} has been deleted` });
     }
     catch (error) {

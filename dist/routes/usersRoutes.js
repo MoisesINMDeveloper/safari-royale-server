@@ -8,7 +8,7 @@ const autenticateToken_1 = __importDefault(require("../middleware/autenticateTok
 const userController_1 = require("../controllers/userController");
 const router = express_1.default.Router();
 router.post("/", autenticateToken_1.default, userController_1.createUser);
-router.get("/", autenticateToken_1.default, userController_1.getAllUsers);
+router.get("/", userController_1.getAllUsers);
 router.get("/:id", autenticateToken_1.default, userController_1.getUserById);
 router.put("/:id", autenticateToken_1.default, userController_1.updateUser);
 router.delete("/:id", autenticateToken_1.default, userController_1.deleteUser);

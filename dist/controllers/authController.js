@@ -16,49 +16,76 @@ exports.login = exports.register = void 0;
 const password_service_1 = require("../services/password.service");
 const user_prisma_1 = __importDefault(require("../models/user.prisma"));
 const auth_service_1 = require("../services/auth.service");
+const email_service_1 = require("../services/email.service"); // Importa la función de envío de correo electrónico
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    const { username, name, email, password } = req.body;
+    const { username, name, email, password, dni, bank, phone } = req.body;
     try {
-        if (!username) {
-            res.status(400).json({ message: "Username is required" });
-            return;
-        }
-        if (!name) {
-            res.status(400).json({ message: "Name is required" });
-            return;
-        }
-        if (!email) {
-            res.status(400).json({ message: "Email is required" });
-            return;
-        }
-        if (!password) {
-            res.status(400).json({ message: "Password is required" });
+        if (!username || !name || !email || !password) {
+            res.status(400).json({ message: "Missing required fields" });
             return;
         }
         const hashedPassword = yield (0, password_service_1.hashPassword)(password);
-        console.log(hashedPassword);
         const user = yield user_prisma_1.default.create({
             data: {
                 username,
                 name,
                 email,
                 password: hashedPassword,
+                // dni,
+                // bank: {
+                //   create: bank, // assuming bank is an object with 'name' and 'code' properties
+                // },
+                // phone: {
+                //   create: phone, // assuming phone is an object with 'code' property
+                // },
             },
         });
-        const token = (0, auth_service_1.generateToken)(user);
-        res.status(201).json({ token });
+        const verificationCode = generarCodigoVerificacion(); // Genera un código de verificación de 6 dígitos
+        (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
+        // Si el usuario está verificado, genera y envía el token
+        if (user.verified) {
+            const token = (0, auth_service_1.generateToken)(user);
+            // Filtrar las propiedades a mostrar
+            const userToSend = {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                email: user.email,
+                dni: user.dni,
+                verified: user.verified,
+                bankId: user.bankId,
+                phoneId: user.phoneId,
+                token: token,
+            };
+            res.status(201).json(userToSend);
+        }
+        else {
+            // Filtrar las propiedades a mostrar
+            const userToSend = {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                email: user.email,
+                dni: user.dni,
+                verified: user.verified,
+                bankId: user.bankId,
+                phoneId: user.phoneId,
+            };
+            res.status(201).json({
+                message: "User registered successfully. Please verify your email.",
+                user: userToSend,
+            });
+        }
     }
     catch (error) {
         console.error("Registration error:", error);
         let statusCode = 500;
         let errorMessage = "There was an error in the register";
-        // Verifica si el error es debido a un correo electrónico duplicado
         if ((error === null || error === void 0 ? void 0 : error.code) === "P2002" && ((_b = (_a = error === null || error === void 0 ? void 0 : error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes("email"))) {
             statusCode = 400;
             errorMessage = "The email entered already exists.";
         }
-        // Enviar respuesta con el código de estado y mensaje adecuados
         res.status(statusCode).json({ error: errorMessage });
     }
 });
@@ -72,6 +99,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         if (!password) {
             res.status(400).json({ message: "The password is required" });
+            return;
         }
         const user = yield user_prisma_1.default.findUnique({ where: { email } });
         if (!user) {
@@ -85,11 +113,36 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
             return;
         }
+        // Verifica si el usuario está verificado
+        if (!user.verified) {
+            res.status(403).json({
+                error: "User is not verified. Please verify your email.",
+            });
+            return;
+        }
+        // Actualiza el token después de la verificación del usuario
         const token = (0, auth_service_1.generateToken)(user);
-        res.status(200).json({ token });
+        // Filtrar las propiedades a mostrar
+        const userToSend = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            dni: user.dni,
+            verified: user.verified,
+            bankId: user.bankId,
+            phoneId: user.phoneId,
+            token: token,
+        };
+        res.status(200).json(userToSend);
     }
     catch (error) {
         console.log("error: ", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 exports.login = login;
+// Función para generar un código de verificación de 6 dígitos
+function generarCodigoVerificacion() {
+    return Math.floor(100000 + Math.random() * 900000); // Genera un número aleatorio de 6 dígitos
+}
