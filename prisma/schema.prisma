@@ -12,10 +12,30 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model User {
-  id    Int     @id @default(autoincrement())
+  id       Int      @id @default(autoincrement())
   username String
-  name  String
-  email String  @unique
+  name     String
+  email    String   @unique
   password String
+  dni      String?
+  verified             Boolean?  @default(false)// Cambiado a un campo opcional para permitir verificación diferida
+  bank     Bank?    @relation(fields: [bankId], references: [id])
+  phone    Phone?   @relation(fields: [phoneId], references: [id])
+  bankId   Int?
+  phoneId  Int?
+}
+
+model Bank {
+  id    Int      @id @default(autoincrement())
+  name  String
+  code  String
+  users User[]
+}
+
+model Phone {
+  id    Int      @id @default(autoincrement())
+  code  String
+  users User[]
 }
