@@ -12,14 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.register = void 0;
+exports.verifyCode = exports.login = exports.register = void 0;
 const password_service_1 = require("../services/password.service");
 const user_prisma_1 = __importDefault(require("../models/user.prisma"));
 const auth_service_1 = require("../services/auth.service");
 const email_service_1 = require("../services/email.service"); // Importa la función de envío de correo electrónico
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    const { username, name, email, password, dni, bank, phone } = req.body;
+    const { username, name, email, password } = req.body;
     try {
         if (!username || !name || !email || !password) {
             res.status(400).json({ message: "Missing required fields" });
@@ -32,51 +32,15 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name,
                 email,
                 password: hashedPassword,
-                // dni,
-                // bank: {
-                //   create: bank, // assuming bank is an object with 'name' and 'code' properties
-                // },
-                // phone: {
-                //   create: phone, // assuming phone is an object with 'code' property
-                // },
             },
         });
-        const verificationCode = generarCodigoVerificacion(); // Genera un código de verificación de 6 dígitos
+        const verificationCode = VerifyCodeGenerate(); // Genera un código de verificación de 6 dígitos
         (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
-        // Si el usuario está verificado, genera y envía el token
-        if (user.verified) {
-            const token = (0, auth_service_1.generateToken)(user);
-            // Filtrar las propiedades a mostrar
-            const userToSend = {
-                id: user.id,
-                username: user.username,
-                name: user.name,
-                email: user.email,
-                dni: user.dni,
-                verified: user.verified,
-                bankId: user.bankId,
-                phoneId: user.phoneId,
-                token: token,
-            };
-            res.status(201).json(userToSend);
-        }
-        else {
-            // Filtrar las propiedades a mostrar
-            const userToSend = {
-                id: user.id,
-                username: user.username,
-                name: user.name,
-                email: user.email,
-                dni: user.dni,
-                verified: user.verified,
-                bankId: user.bankId,
-                phoneId: user.phoneId,
-            };
-            res.status(201).json({
-                message: "User registered successfully. Please verify your email.",
-                user: userToSend,
-            });
-        }
+        res.status(201).json({
+            message: "User registered successfully. Please verify your email.",
+        });
+        // Almacena el código de verificación temporalmente
+        almacenarCodigoVerificacion(user.email, verificationCode);
     }
     catch (error) {
         console.error("Registration error:", error);
@@ -142,7 +106,48 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, verificationCode } = req.body;
+    try {
+        // Verificar si el usuario existe en la base de datos
+        const user = yield user_prisma_1.default.findUnique({ where: { email } });
+        if (!user) {
+            res.status(404).json({ error: "User not found." });
+            return;
+        }
+        // Obtener el código de verificación almacenado para el usuario
+        const storedVerificationCode = verificationCodes[email];
+        if (!storedVerificationCode) {
+            res.status(400).json({ error: "No verification code found." });
+            return;
+        }
+        // Verificar si el código de verificación coincide
+        if (storedVerificationCode !== verificationCode) {
+            res.status(400).json({ error: "Invalid verification code." });
+            return;
+        }
+        // Actualizar el estado de verificación del usuario en la base de datos
+        yield user_prisma_1.default.update({
+            where: { email },
+            data: { verified: true },
+        });
+        // Eliminar el código de verificación almacenado
+        delete verificationCodes[email];
+        res.status(200).json({ message: "Email verified successfully." });
+    }
+    catch (error) {
+        console.error("Verification error:", error);
+        res.status(500).json({ error: "Error verifying email" });
+    }
+});
+exports.verifyCode = verifyCode;
+// Definir un mapa para almacenar temporalmente los códigos de verificación
+const verificationCodes = {};
 // Función para generar un código de verificación de 6 dígitos
-function generarCodigoVerificacion() {
-    return Math.floor(100000 + Math.random() * 900000); // Genera un número aleatorio de 6 dígitos
+function VerifyCodeGenerate() {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // Genera un número aleatorio de 6 dígitos como cadena
+}
+// Función para almacenar el código de verificación temporalmente
+function almacenarCodigoVerificacion(email, verificationCode) {
+    verificationCodes[email] = verificationCode;
 }
