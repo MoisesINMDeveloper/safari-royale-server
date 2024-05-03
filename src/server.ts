@@ -5,6 +5,7 @@ import cors from "cors";
 const allowedOrigins = [
   "http://localhost:3000",
   "https://safari-royale-server-production.up.railway.app",
+  "https://safari-royale-server-production.up.railway.app/users/auth/login",
 ];
 
 // Agregar configuración de CORS antes de iniciar el servidor
