@@ -1,18 +1,12 @@
 import app from "./app";
 import cors from "cors";
 
-// Definir los dominios permitidos en un arreglo
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://safari-royale-server-production.up.railway.app",
-  "https://safari-royale-server-production.up.railway.app/users/auth/login",
-];
-
 // Agregar configuración de CORS antes de iniciar el servidor
 app.use(
   cors({
-    origin: allowedOrigins,
-    optionsSuccessStatus: 200, // algunas versiones de cors requieren esto
+    origin: "*", // Permitir cualquier origen
+    methods: ["GET", "POST", "PUT", "DELETE"], // Permitir todos los métodos HTTP
+    allowedHeaders: ["Content-Type", "Authorization"], // Permitir ciertos encabezados
   })
 );
 

@@ -5,7 +5,7 @@ import { generateToken } from "../services/auth.service";
 import { sendCodeVerification } from "../services/email.service"; // Importa la función de envío de correo electrónico
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, name, email, password } = req.body;
+  const { username, name, email, password, bankName, phoneCode } = req.body;
   try {
     if (!username || !name || !email || !password) {
       res.status(400).json({ message: "Missing required fields" });
@@ -20,6 +20,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         name,
         email,
         password: hashedPassword,
+        bankName,
+        phoneCode,
       },
     });
 
@@ -85,8 +87,8 @@ export const login = async (req: Request, res: Response) => {
       email: user.email,
       dni: user.dni,
       verified: user.verified,
-      bankId: user.bankId,
-      phoneId: user.phoneId,
+      bankName: user.bankName,
+      phoneCode: user.phoneCode,
       token: token,
     };
     res.status(200).json(userToSend);

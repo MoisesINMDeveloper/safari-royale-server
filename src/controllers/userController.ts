@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { hashPassword } from "../services/password.service";
 import { PrismaClient } from "@prisma/client";
-import bankPrisma from "../models/bank.prisma";
-import { generateToken } from "../services/auth.service"; // Importa la función para generar tokens
+import { generateToken } from "../services/auth.service";
+
 const prisma = new PrismaClient();
 
 export const createUser = async (
@@ -10,8 +10,16 @@ export const createUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { username, name, email, dni, password, bank, phone, verified } =
-      req.body;
+    const {
+      username,
+      name,
+      email,
+      dni,
+      password,
+      bankName, // Agregado
+      phoneCode, // Agregado
+      verified,
+    } = req.body;
 
     if (
       !username ||
@@ -20,8 +28,8 @@ export const createUser = async (
       !password ||
       !dni ||
       !verified ||
-      !bank ||
-      !phone
+      !bankName || // Agregado
+      !phoneCode // Agregado
     ) {
       res.status(400).json({ message: "Missing required fields" });
       return;
@@ -29,40 +37,28 @@ export const createUser = async (
 
     const hashedPassword = await hashPassword(password);
 
-    const idBank = await bankPrisma.findUnique({
-      where: {
-        id: bank,
-      },
-    });
+    const userData = {
+      username,
+      name,
+      email,
+      password: hashedPassword,
+      dni,
+      verified,
+      phoneCode: phoneCode,
+
+      bankName: bankName,
+    };
+
     const user = await prisma.user.create({
-      data: {
-        username,
-        name,
-        email,
-        password: hashedPassword,
-        dni,
-        verified,
-        bank: {
-          connect: {
-            id: idBank?.id,
-          },
-        },
-        phone,
-      },
+      data: userData,
     });
 
-    // Genera el token
-    const token = generateToken(user);
-
-    // Agrega el token a la respuesta
-    res.status(201).json({ ...user, token });
+    res.status(201).json(user);
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Error creating user" });
   }
 };
-
-// El resto de tus controladores aquí...
 
 export const getAllUsers = async (
   req: Request,
@@ -72,13 +68,13 @@ export const getAllUsers = async (
     const users = await prisma.user.findMany();
     const usersWithoutPassword = users.map((user) => ({
       ...user,
-      token: user.verified ? generateToken(user) : undefined, // Agregar el token solo si el usuario está verificado
-      password: undefined, // Eliminar el campo de contraseña del usuario
+      token: user.verified ? generateToken(user) : undefined,
+      password: undefined,
     }));
     res.status(200).json(usersWithoutPassword);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "There was an error try later." });
+    console.error(error);
+    res.status(500).json({ error: "There was an error, try later" });
   }
 };
 
@@ -95,71 +91,56 @@ export const getUserById = async (
     }
     const userWithoutPassword = {
       ...user,
-      token: user.verified ? generateToken(user) : undefined, // Agregar el token solo si el usuario está verificado
-      password: undefined, // Eliminar el campo de contraseña del usuario
+      token: user.verified ? generateToken(user) : undefined,
+      password: undefined,
     };
     res.status(200).json(userWithoutPassword);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "There was an error try later." });
+    console.error(error);
+    res.status(500).json({ error: "There was an error, try later" });
   }
 };
+
 export const updateUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const userId: number = parseInt(req.params.id);
-  const { username, email, password, dni, bankId, phoneId, verified } =
+  const { username, email, password, dni, bankName, phoneCode, verified } =
     req.body;
   try {
-    let dataToUpdate: any = {}; // Objeto para almacenar los datos a actualizar
+    let dataToUpdate: any = {};
 
-    // Verificar y actualizar el nombre de usuario
     if (username) {
       dataToUpdate.username = username;
     }
-
-    // Verificar y actualizar el correo electrónico
     if (email) {
       dataToUpdate.email = email;
     }
-
-    // Verificar y actualizar la contraseña
     if (password) {
       const hashedPassword = await hashPassword(password);
       dataToUpdate.password = hashedPassword;
     }
-
-    // Verificar y actualizar el número de identificación (dni)
     if (dni) {
       dataToUpdate.dni = dni;
     }
-
-    // Verificar y actualizar el ID del banco
-    if (bankId) {
-      dataToUpdate.bankId = bankId;
+    if (bankName) {
+      dataToUpdate.bankName = bankName;
     }
-
-    // Verificar y actualizar el ID del teléfono
-    if (phoneId) {
-      dataToUpdate.phoneId = phoneId;
+    if (phoneCode) {
+      dataToUpdate.phoneCode = phoneCode;
     }
-
-    // Verificar y actualizar el estado de verificación
     if (verified !== undefined) {
       dataToUpdate.verified = verified;
     }
 
-    // Actualizar los datos del usuario utilizando Prisma
     const updatedUser = await prisma.user.update({
-      where: { id: userId }, // Especificar el usuario que se actualizará
-      data: dataToUpdate, // Pasar los datos a actualizar
+      where: { id: userId },
+      data: dataToUpdate,
     });
 
-    // Responder con el usuario actualizado
     res.status(200).json(updatedUser);
   } catch (error: any) {
-    // Manejar errores
     if (error?.code === "P2002" && error?.meta?.target?.includes("email")) {
       res.status(400).json({ error: "The email entered already exists" });
     } else if (error?.code === "P2025") {
@@ -183,10 +164,8 @@ export const deleteUser = async (
     if (error?.code === "P2025") {
       res.status(404).json("User not found");
     } else {
-      console.log(error);
-      res.status(500).json({
-        error: "There was an error, try later",
-      });
+      console.error(error);
+      res.status(500).json({ error: "There was an error, try later" });
     }
   }
 };

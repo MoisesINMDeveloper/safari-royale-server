@@ -20,22 +20,22 @@ model User {
   email    String   @unique
   password String
   dni      String?
-  verified             Boolean?  @default(false)// Cambiado a un campo opcional para permitir verificación diferida
-  bank     Bank?    @relation(fields: [bankId], references: [id])
-  phone    Phone?   @relation(fields: [phoneId], references: [id])
-  bankId   Int?
-  phoneId  Int?
+  verified Boolean? @default(false)
+  bank     Bank?    @relation(fields: [bankName], references: [name])
+  phone    Phone?   @relation(fields: [phoneCode], references: [code])
+  bankName   String?
+  phoneCode  String?
 }
 
 model Bank {
-  id    Int      @id @default(autoincrement())
-  name  String
-  code  String
-  users User[]
+  id     Int     @unique @id @default(autoincrement())
+  name   String @unique
+  code   String
+  users  User[]
 }
 
 model Phone {
-  id    Int      @id @default(autoincrement())
-  code  String
-  users User[]
+  id     Int    @unique  @id @default(autoincrement())
+  code   String @unique
+  users  User[]
 }

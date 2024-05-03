@@ -1,4 +1,4 @@
-import { Bank } from "@prisma/client";
+import { Bank, Phone } from "@prisma/client";
 
 export interface User {
   id: number;
@@ -7,6 +7,8 @@ export interface User {
   email: string;
   password: string;
   dni?: string | null;
-  bankId: number | null; // Campo de referencia al ID del banco
+  bankName: string | "" | null; // Campo de referencia al ID del banco
+  phoneCode: string | "" | null;
   bank?: Bank; // Relación con el banco  phoneId?: number | null;
+  phone?: Phone;
 }
