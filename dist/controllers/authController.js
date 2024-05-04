@@ -19,7 +19,7 @@ const auth_service_1 = require("../services/auth.service");
 const email_service_1 = require("../services/email.service"); // Importa la función de envío de correo electrónico
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    const { username, name, email, password } = req.body;
+    const { username, name, email, password, bankName, phoneCode } = req.body;
     try {
         if (!username || !name || !email || !password) {
             res.status(400).json({ message: "Missing required fields" });
@@ -32,6 +32,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name,
                 email,
                 password: hashedPassword,
+                bankName,
+                phoneCode,
             },
         });
         const verificationCode = VerifyCodeGenerate(); // Genera un código de verificación de 6 dígitos
@@ -94,8 +96,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             email: user.email,
             dni: user.dni,
             verified: user.verified,
-            bankId: user.bankId,
-            phoneId: user.phoneId,
+            bankName: user.bankName,
+            phoneCode: user.phoneCode,
             token: token,
         };
         res.status(200).json(userToSend);
