@@ -12,10 +12,10 @@ const app = express();
 app.use(express.json());
 
 // Rutas
-app.use("/api/auth", authRoutes); // Ruta para la autenticación
-app.use("/api/phone", phoneRoutes); // Ruta para las operaciones del teléfono
-app.use("/api/bank", bankRoutes); // Ruta para las operaciones del banco
-app.use("/api/users", usersRoutes); // Ruta para las operaciones de los usuarios
+app.use("/auth", authRoutes); // Ruta para la autenticación
+app.use("/phone", phoneRoutes); // Ruta para las operaciones del teléfono
+app.use("/bank", bankRoutes); // Ruta para las operaciones del banco
+app.use("/users", usersRoutes); // Ruta para las operaciones de los usuarios
 
 // Exportar la aplicación Express
 export default app;

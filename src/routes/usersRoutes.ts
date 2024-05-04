@@ -9,13 +9,13 @@ import {
 } from "../controllers/userController";
 
 const router = express.Router();
-router.post("/", autenticateToken, createUser);
+router.post("/", createUser);
 
 router.get("/", getAllUsers);
 
-router.get("/:id", autenticateToken, getUserById);
+router.get("/:id", getUserById);
 
-router.put("/:id", autenticateToken, updateUser);
+router.put("/:id", updateUser);
 
-router.delete("/:id", autenticateToken, deleteUser);
+router.delete("/:id", deleteUser);
 export default router;
