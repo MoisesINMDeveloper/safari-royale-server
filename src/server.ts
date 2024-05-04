@@ -1,12 +1,12 @@
 import app from "./app";
 import cors from "cors";
 
-// Agregar configuración de CORS antes de iniciar el servidor
+// Configuración del middleware CORS
 app.use(
   cors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type, Accept",
+    origin: "*", // Permitir solicitudes desde cualquier origen
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Permitir varios métodos HTTP
+    allowedHeaders: "Content-Type, Accept", // Permitir ciertos encabezados
   })
 );
 

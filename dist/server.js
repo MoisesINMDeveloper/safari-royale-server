@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const cors_1 = __importDefault(require("cors"));
-// Agregar configuración de CORS antes de iniciar el servidor
+// Configuración del middleware CORS
 app_1.default.use((0, cors_1.default)({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type, Accept",
+    origin: "*", // Permitir solicitudes desde cualquier origen
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Permitir varios métodos HTTP
+    allowedHeaders: "Content-Type, Accept", // Permitir ciertos encabezados
 }));
 const PORT = process.env.PORT;
 app_1.default.listen(PORT, () => {

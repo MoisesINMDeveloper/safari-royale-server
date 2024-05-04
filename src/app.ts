@@ -13,9 +13,9 @@ app.use(express.json());
 
 // Routes
 
-app.use("/auth", authRoutes);
-app.use("/", phoneRoutes);
-app.use("/", bankRoutes);
-app.use("/users", usersRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/", phoneRoutes);
+app.use("/api/v1/", bankRoutes);
+app.use("/api/v1/users", usersRoutes);
 // Construir api rest para user
 export default app;

@@ -13,9 +13,9 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 // Routes
-app.use("/auth", authRoutes_1.default);
-app.use("/", phoneRoutes_1.default);
-app.use("/", bankRoutes_1.default);
-app.use("/users", usersRoutes_1.default);
+app.use("/api/v1/auth", authRoutes_1.default);
+app.use("/api/v1/", phoneRoutes_1.default);
+app.use("/api/v1/", bankRoutes_1.default);
+app.use("/api/v1/users", usersRoutes_1.default);
 // Construir api rest para user
 exports.default = app;
