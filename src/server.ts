@@ -1,13 +1,7 @@
 import app from "./app";
 import cors from "cors";
 
-app.use(
-  cors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "*",
-  })
-);
+app.use(cors());
 
 const PORT = process.env.PORT;
 
