@@ -1,5 +1,4 @@
 import express from "express";
-import autenticateToken from "../middleware/autenticateToken";
 import {
   createUser,
   deleteUser,
