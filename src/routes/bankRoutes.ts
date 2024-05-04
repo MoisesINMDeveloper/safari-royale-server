@@ -11,18 +11,18 @@ import {
 const router = express.Router();
 
 // Ruta para crear un nuevo banco
-router.post("/banks", autenticateToken, createBank);
+router.post("/", autenticateToken, createBank);
 
 // Ruta para obtener todos los bancos
-router.get("/banks", autenticateToken, getAllBanks);
+router.get("/", autenticateToken, getAllBanks);
 
 // Ruta para obtener un banco por su ID
-router.get("/banks/:id", autenticateToken, getBankById);
+router.get("/:id", autenticateToken, getBankById);
 
 // Ruta para actualizar un banco por su ID
-router.put("/banks/:id", autenticateToken, updateBank);
+router.put("/:id", autenticateToken, updateBank);
 
 // Ruta para eliminar un banco por su ID
-router.delete("/banks/:id", autenticateToken, deleteBank);
+router.delete("/:id", autenticateToken, deleteBank);
 
 export default router;

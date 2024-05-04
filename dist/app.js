@@ -12,10 +12,10 @@ const phoneRoutes_1 = __importDefault(require("./routes/phoneRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-// Routes
-app.use("/api/v1/auth", authRoutes_1.default);
-app.use("/api/v1/", phoneRoutes_1.default);
-app.use("/api/v1/", bankRoutes_1.default);
-app.use("/api/v1/users", usersRoutes_1.default);
-// Construir api rest para user
+// Rutas
+app.use("/api/v1/auth", authRoutes_1.default); // Ruta para la autenticación
+app.use("/api/v1/phone", phoneRoutes_1.default); // Ruta para las operaciones del teléfono
+app.use("/api/v1/bank", bankRoutes_1.default); // Ruta para las operaciones del banco
+app.use("/api/v1/users", usersRoutes_1.default); // Ruta para las operaciones de los usuarios
+// Exportar la aplicación Express
 exports.default = app;
