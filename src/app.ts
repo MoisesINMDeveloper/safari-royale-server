@@ -16,7 +16,7 @@ app.use(express.json());
 const corsOptions = {
   origin: "*", // Permitir solicitudes desde cualquier origen
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Permitir varios métodos HTTP
-  allowedHeaders: "Content-Type, Accept", // Permitir ciertos encabezados
+  allowedHeaders: "*", // Permitir ciertos encabezados
 };
 
 // Routes

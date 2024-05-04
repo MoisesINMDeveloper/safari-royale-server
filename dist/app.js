@@ -17,7 +17,7 @@ app.use(express_1.default.json());
 const corsOptions = {
     origin: "*", // Permitir solicitudes desde cualquier origen
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Permitir varios métodos HTTP
-    allowedHeaders: "Content-Type, Accept", // Permitir ciertos encabezados
+    allowedHeaders: "*", // Permitir ciertos encabezados
 };
 // Routes
 app.use("/api/v1/auth", (0, cors_1.default)(corsOptions), authRoutes_1.default);
