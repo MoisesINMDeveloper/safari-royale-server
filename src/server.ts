@@ -1,15 +1,14 @@
-import app from "./app";
+import express from "express";
 import cors from "cors";
 
-app.use(
-  cors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "*",
-  })
-);
+const app = express();
 
-const PORT = process.env.PORT;
+// Middleware de CORS
+app.use(cors());
+
+// Resto de la configuración de tu aplicación...
+
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT:${PORT}`);
