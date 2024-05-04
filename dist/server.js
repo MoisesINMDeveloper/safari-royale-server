@@ -6,12 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const cors_1 = __importDefault(require("cors"));
 // Configuración del middleware CORS
-app_1.default.use((0, cors_1.default)({
-    origin: "*", // Permitir solicitudes desde cualquier origen
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Permitir varios métodos HTTP
-    allowedHeaders: "Content-Type, Accept", // Permitir ciertos encabezados
-}));
-const PORT = process.env.PORT;
+app_1.default.use((0, cors_1.default)());
+const PORT = process.env.PORT || 3000;
 app_1.default.listen(PORT, () => {
     console.log(`Server is running on PORT:${PORT}`);
 });

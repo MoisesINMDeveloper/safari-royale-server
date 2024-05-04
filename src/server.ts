@@ -2,15 +2,9 @@ import app from "./app";
 import cors from "cors";
 
 // Configuración del middleware CORS
-app.use(
-  cors({
-    origin: "*", // Permitir solicitudes desde cualquier origen
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Permitir varios métodos HTTP
-    allowedHeaders: "Content-Type, Accept", // Permitir ciertos encabezados
-  })
-);
+app.use(cors());
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT:${PORT}`);
