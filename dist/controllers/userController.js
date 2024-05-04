@@ -16,18 +16,16 @@ const auth_service_1 = require("../services/auth.service");
 const prisma = new client_1.PrismaClient();
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username, name, email, dni, password, bankName, // Agregado
-        phoneCode, // Agregado
-        verified, } = req.body;
+        const { username, name, email, dni, password, phone, bankName, phoneCode, verified, } = req.body;
         if (!username ||
             !name ||
             !email ||
             !password ||
             !dni ||
             !verified ||
-            !bankName || // Agregado
-            !phoneCode // Agregado
-        ) {
+            !phone ||
+            !bankName ||
+            !phoneCode) {
             res.status(400).json({ message: "Missing required fields" });
             return;
         }
@@ -39,6 +37,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             password: hashedPassword,
             dni,
             verified,
+            phone,
             phoneCode: phoneCode,
             bankName: bankName,
         };
@@ -85,7 +84,7 @@ exports.getUserById = getUserById;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const userId = parseInt(req.params.id);
-    const { username, email, password, dni, bankName, phoneCode, verified } = req.body;
+    const { username, email, password, dni, bankName, phoneCode, verified, phone, } = req.body;
     try {
         let dataToUpdate = {};
         if (username) {
@@ -109,6 +108,9 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         if (verified !== undefined) {
             dataToUpdate.verified = verified;
+        }
+        if (phone !== undefined) {
+            dataToUpdate.phone = phone;
         }
         const updatedUser = yield prisma.user.update({
             where: { id: userId },

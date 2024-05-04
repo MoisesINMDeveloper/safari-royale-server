@@ -20,9 +20,10 @@ model User {
   email    String   @unique
   password String
   dni      String?
+  phone    String?
   verified Boolean? @default(false)
   bank     Bank?    @relation(fields: [bankName], references: [name])
-  phone    Phone?   @relation(fields: [phoneCode], references: [code])
+  codePhone    Phone?   @relation(fields: [phoneCode], references: [code])
   bankName   String?
   phoneCode  String?
 }

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { hashPassword } from "../services/password.service";
 import { PrismaClient } from "@prisma/client";
 import { generateToken } from "../services/auth.service";
+import { phone } from "../types/phone.interface";
 
 const prisma = new PrismaClient();
 
@@ -16,8 +17,9 @@ export const createUser = async (
       email,
       dni,
       password,
-      bankName, // Agregado
-      phoneCode, // Agregado
+      phone,
+      bankName,
+      phoneCode,
       verified,
     } = req.body;
 
@@ -28,8 +30,9 @@ export const createUser = async (
       !password ||
       !dni ||
       !verified ||
-      !bankName || // Agregado
-      !phoneCode // Agregado
+      !phone ||
+      !bankName ||
+      !phoneCode
     ) {
       res.status(400).json({ message: "Missing required fields" });
       return;
@@ -44,6 +47,7 @@ export const createUser = async (
       password: hashedPassword,
       dni,
       verified,
+      phone,
       phoneCode: phoneCode,
 
       bankName: bankName,
@@ -106,8 +110,16 @@ export const updateUser = async (
   res: Response
 ): Promise<void> => {
   const userId: number = parseInt(req.params.id);
-  const { username, email, password, dni, bankName, phoneCode, verified } =
-    req.body;
+  const {
+    username,
+    email,
+    password,
+    dni,
+    bankName,
+    phoneCode,
+    verified,
+    phone,
+  } = req.body;
   try {
     let dataToUpdate: any = {};
 
@@ -132,6 +144,9 @@ export const updateUser = async (
     }
     if (verified !== undefined) {
       dataToUpdate.verified = verified;
+    }
+    if (phone !== undefined) {
+      dataToUpdate.phone = phone;
     }
 
     const updatedUser = await prisma.user.update({
