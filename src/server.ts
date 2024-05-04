@@ -1,14 +1,13 @@
 import app from "./app";
-// import cors from "cors";
+import cors from "cors";
 
-// Agregar configuración de CORS antes de iniciar el servidor
-// app.use(
-//   cors({
-//     origin: "*",
-//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-//     allowedHeaders: "Content-Type, Accept",
-//   })
-// );
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: "*",
+  })
+);
 
 const PORT = process.env.PORT;
 
