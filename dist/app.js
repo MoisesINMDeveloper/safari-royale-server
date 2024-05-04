@@ -13,9 +13,9 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 // Rutas
-app.use("/auth", authRoutes_1.default); // Ruta para la autenticación
-app.use("/phone", phoneRoutes_1.default); // Ruta para las operaciones del teléfono
-app.use("/bank", bankRoutes_1.default); // Ruta para las operaciones del banco
-app.use("/users", usersRoutes_1.default); // Ruta para las operaciones de los usuarios
+app.use("/api/auth", authRoutes_1.default); // Ruta para la autenticación
+app.use("/api/phone", phoneRoutes_1.default); // Ruta para las operaciones del teléfono
+app.use("/api/bank", bankRoutes_1.default); // Ruta para las operaciones del banco
+app.use("/api/users", usersRoutes_1.default); // Ruta para las operaciones de los usuarios
 // Exportar la aplicación Express
 exports.default = app;
