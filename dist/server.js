@@ -9,7 +9,7 @@ const app = (0, express_1.default)();
 // Configuración de CORS
 app.use((0, cors_1.default)({
     origin: "*",
-    methods: "get,head,put,patch,post,delete",
+    methods: "*",
     allowedHeaders: "Content-Type, Accept",
 }));
 const PORT = process.env.PORT || 3000;
