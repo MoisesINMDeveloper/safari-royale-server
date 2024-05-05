@@ -11,13 +11,7 @@ const whitelist = [
 ];
 
 const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: whitelist,
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };

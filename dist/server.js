@@ -13,14 +13,7 @@ const whitelist = [
     "https://www.bing.com", // Otro ejemplo de dominio de buscador
 ];
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || whitelist.includes(origin)) {
-            callback(null, true);
-        }
-        else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
+    origin: whitelist,
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization",
 };
