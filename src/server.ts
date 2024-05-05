@@ -1,7 +1,8 @@
 import app from "./app";
 import cors from "cors";
 
-app.use(cors());
+const whiteList = ["http://localhost:3000"];
+app.use(cors({ origin: whiteList }));
 
 const PORT = process.env.PORT;
 
