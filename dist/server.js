@@ -14,15 +14,13 @@ const whitelist = [
 ];
 const corsOptions = {
     origin: function (origin, callback) {
-        if (!origin || whitelist.includes(origin)) {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
             callback(null, true);
         }
         else {
             callback(new Error("Not allowed by CORS"));
         }
     },
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
 };
 app.use((0, cors_1.default)(corsOptions));
 // Resto de la configuración de tu aplicación...
