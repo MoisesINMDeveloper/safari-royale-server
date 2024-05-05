@@ -1,18 +1,9 @@
-import express from "express";
-import cors from "cors"; // Importa la función cors desde el paquete cors
+import app from "./app";
+import cors from "cors";
 
-const app = express();
+app.use(cors());
 
-// Configuración de CORS
-app.use(
-  cors({
-    origin: "*",
-    methods: "*",
-    allowedHeaders: "Content-Type, Accept",
-  })
-);
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT:${PORT}`);
