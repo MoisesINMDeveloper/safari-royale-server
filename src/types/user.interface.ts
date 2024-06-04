@@ -3,7 +3,6 @@ import { Bank, Phone } from "@prisma/client";
 export interface User {
   id: number;
   username: string;
-  name: string;
   email: string;
   password: string;
   phone: string | null;

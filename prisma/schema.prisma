@@ -14,29 +14,29 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  username String
-  name     String
-  email    String   @unique
-  password String
-  dni      String?
-  phone    String?
-  verified Boolean? @default(false)
-  bank     Bank?    @relation(fields: [bankName], references: [name])
-  codePhone    Phone?   @relation(fields: [phoneCode], references: [code])
+  id         Int     @id @default(autoincrement())
+  username   String
+  name       String?
+  email      String  @unique
+  password   String
+  dni        String?
+  phone      String?
+  verified   Boolean @default(false)
+  bank       Bank?   @relation(fields: [bankName], references: [name])
+  codePhone  Phone?  @relation(fields: [phoneCode], references: [code])
   bankName   String?
   phoneCode  String?
 }
 
 model Bank {
-  id     Int     @unique @id @default(autoincrement())
+  id     Int    @id @default(autoincrement())
   name   String @unique
   code   String
   users  User[]
 }
 
 model Phone {
-  id     Int    @unique  @id @default(autoincrement())
+  id     Int    @id @default(autoincrement())
   code   String @unique
   users  User[]
 }

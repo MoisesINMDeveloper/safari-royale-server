@@ -19,9 +19,9 @@ const auth_service_1 = require("../services/auth.service");
 const email_service_1 = require("../services/email.service"); // Importa la función de envío de correo electrónico
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    const { username, name, email, password, bankName, phoneCode } = req.body;
+    const { username, email, password } = req.body;
     try {
-        if (!username || !name || !email || !password) {
+        if (!username || !email || !password) {
             res.status(400).json({ message: "Missing required fields" });
             return;
         }
@@ -29,11 +29,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield user_prisma_1.default.create({
             data: {
                 username,
-                name,
                 email,
                 password: hashedPassword,
-                bankName,
-                phoneCode,
             },
         });
         const verificationCode = VerifyCodeGenerate(); // Genera un código de verificación de 6 dígitos
@@ -81,8 +78,12 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         // Verifica si el usuario está verificado
         if (!user.verified) {
+            // Si el usuario no está verificado, genera un nuevo código de verificación y envíalo por correo electrónico
+            const verificationCode = VerifyCodeGenerate();
+            (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
+            almacenarCodigoVerificacion(user.email, verificationCode); // Almacena el código de verificación temporalmente
             res.status(403).json({
-                error: "User is not verified. Please verify your email.",
+                error: "User is not verified. Verification code sent to your email.",
             });
             return;
         }

@@ -5,9 +5,9 @@ import { generateToken } from "../services/auth.service";
 import { sendCodeVerification } from "../services/email.service"; // Importa la función de envío de correo electrónico
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, name, email, password, bankName, phoneCode } = req.body;
+  const { username, email, password } = req.body;
   try {
-    if (!username || !name || !email || !password) {
+    if (!username || !email || !password) {
       res.status(400).json({ message: "Missing required fields" });
       return;
     }
@@ -17,11 +17,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const user = await prisma.create({
       data: {
         username,
-        name,
         email,
         password: hashedPassword,
-        bankName,
-        phoneCode,
       },
     });
 
@@ -72,11 +69,17 @@ export const login = async (req: Request, res: Response) => {
     }
     // Verifica si el usuario está verificado
     if (!user.verified) {
+      // Si el usuario no está verificado, genera un nuevo código de verificación y envíalo por correo electrónico
+      const verificationCode: any = VerifyCodeGenerate();
+      sendCodeVerification(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
+      almacenarCodigoVerificacion(user.email, verificationCode); // Almacena el código de verificación temporalmente
+
       res.status(403).json({
-        error: "User is not verified. Please verify your email.",
+        error: "User is not verified. Verification code sent to your email.",
       });
       return;
     }
+
     // Actualiza el token después de la verificación del usuario
     const token = generateToken(user);
     // Filtrar las propiedades a mostrar
