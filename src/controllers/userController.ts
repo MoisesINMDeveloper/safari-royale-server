@@ -1,10 +1,7 @@
 import { Request, Response } from "express";
 import { hashPassword } from "../services/password.service";
-import { PrismaClient } from "@prisma/client";
+import userPrisma from "../models/user.prisma";
 import { generateToken } from "../services/auth.service";
-import { phone } from "../types/phone.interface";
-
-const prisma = new PrismaClient();
 
 export const createUser = async (
   req: Request,
@@ -53,7 +50,7 @@ export const createUser = async (
       bankName: bankName,
     };
 
-    const user = await prisma.user.create({
+    const user = await userPrisma.create({
       data: userData,
     });
 
@@ -69,7 +66,7 @@ export const getAllUsers = async (
   res: Response
 ): Promise<void> => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await userPrisma.findMany();
     const usersWithoutPassword = users.map((user) => ({
       ...user,
       token: user.verified ? generateToken(user) : undefined,
@@ -88,7 +85,7 @@ export const getUserById = async (
 ): Promise<void> => {
   const userId: number = parseInt(req.params.id);
   try {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await userPrisma.findUnique({ where: { id: userId } });
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
@@ -149,7 +146,7 @@ export const updateUser = async (
       dataToUpdate.phone = phone;
     }
 
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await userPrisma.update({
       where: { id: userId },
       data: dataToUpdate,
     });
@@ -173,7 +170,7 @@ export const deleteUser = async (
 ): Promise<void> => {
   const userId: number = parseInt(req.params.id);
   try {
-    await prisma.user.delete({ where: { id: userId } });
+    await userPrisma.delete({ where: { id: userId } });
     res.status(200).json({ message: `The user ${userId} has been deleted` });
   } catch (error: any) {
     if (error?.code === "P2025") {
