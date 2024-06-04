@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { comparePassword, hashPassword } from "../services/password.service";
-import prisma from "../models/user.prisma";
+import prismaUser from "../models/user.prisma";
 import { generateToken } from "../services/auth.service";
 import { sendCodeVerification } from "../services/email.service"; // Importa la función de envío de correo electrónico
 
@@ -14,7 +14,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const hashedPassword = await hashPassword(password);
 
-    const user = await prisma.create({
+    const user = await prismaUser.create({
       data: {
         username,
         email,
@@ -55,7 +55,7 @@ export const login = async (req: Request, res: Response) => {
       res.status(400).json({ message: "The password is required" });
       return;
     }
-    const user = await prisma.findUnique({ where: { email } });
+    const user = await prismaUser.findUnique({ where: { email } });
     if (!user) {
       res.status(404).json({ error: "User not found." });
       return;
@@ -108,7 +108,7 @@ export const verifyCode = async (
   const { email, verificationCode } = req.body;
   try {
     // Verificar si el usuario existe en la base de datos
-    const user = await prisma.findUnique({ where: { email } });
+    const user = await prismaUser.findUnique({ where: { email } });
     if (!user) {
       res.status(404).json({ error: "User not found." });
       return;
@@ -128,7 +128,7 @@ export const verifyCode = async (
     }
 
     // Actualizar el estado de verificación del usuario en la base de datos
-    await prisma.update({
+    await prismaUser.update({
       where: { email },
       data: { verified: true },
     });
