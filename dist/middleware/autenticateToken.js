@@ -13,9 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const user_prisma_1 = __importDefault(require("../models/user.prisma"));
+const client_1 = require("@prisma/client");
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
-const autenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const prisma = new client_1.PrismaClient();
+const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
@@ -23,7 +24,7 @@ const autenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
-        const user = yield user_prisma_1.default.findUnique({
+        const user = yield prisma.user.findUnique({
             where: { id: decoded.id },
         });
         if (!user) {
@@ -40,4 +41,4 @@ const autenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         return res.status(403).json({ error: "No tienes acceso a este recurso." });
     }
 });
-exports.default = autenticateToken;
+exports.default = authenticateToken;
