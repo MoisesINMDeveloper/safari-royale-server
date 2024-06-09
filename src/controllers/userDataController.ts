@@ -9,7 +9,7 @@ export const getUserData = async (
     // Obtener la información del middleware authenticateToken
     const user = res.locals.user;
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ error: "Usuario no encontrado" });
       return;
     }
 
@@ -31,7 +31,7 @@ export const getUserData = async (
     });
 
     if (!userData) {
-      res.status(404).json({ error: "User data not found" });
+      res.status(404).json({ error: "Datos del usuario no encontrados" });
       return;
     }
 
@@ -45,7 +45,7 @@ export const getUserData = async (
     // Enviar los datos del usuario en la respuesta
     res.status(200).json(filteredUserData);
   } catch (error) {
-    console.error("Error retrieving user data:", error);
-    res.status(500).json({ error: "There was an error, try later" });
+    console.error("Error al obtener los datos del usuario:", error);
+    res.status(500).json({ error: "Hubo un error, intenta más tarde" });
   }
 };

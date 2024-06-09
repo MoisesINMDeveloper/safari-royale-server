@@ -16,19 +16,23 @@ const authenticateToken = async (
   }
   try {
     const decoded: any = jwt.verify(token, JWT_SECRET);
+    if (!decoded || !decoded.id) {
+      return res.status(403).json({ error: "Token inválido" });
+    }
+
     const user = await userPrisma.findUnique({
       where: { id: decoded.id },
     });
+
     if (!user) {
-      return res
-        .status(403)
-        .json({ error: "No tienes acceso a este recurso." });
+      return res.status(403).json({ error: "Usuario no encontrado" });
     }
+
     // Almacenamos la información del usuario en res.locals para que esté disponible para los controladores
     res.locals.user = user;
     next();
   } catch (err) {
-    console.log("Error en la autenticacion:", err);
+    console.error("Error en la autenticación:", err);
     return res.status(403).json({ error: "No tienes acceso a este recurso." });
   }
 };
