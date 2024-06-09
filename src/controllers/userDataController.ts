@@ -36,7 +36,7 @@ export const getUserData = async (
     }
 
     // Crear un objeto con los datos del usuario excluyendo el id y el token
-    const { id, password, ...filteredUserData } = {
+    const { password, ...filteredUserData } = {
       ...userData,
       bankName: userData.bank?.name,
       phoneCode: userData.codePhone?.code, // Ajustar según la estructura de Phone
