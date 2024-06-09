@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_prisma_1 = __importDefault(require("../models/user.prisma"));
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
-const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const autenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
@@ -40,4 +40,4 @@ const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         return res.status(403).json({ error: "No tienes acceso a este recurso." });
     }
 });
-exports.default = authenticateToken;
+exports.default = autenticateToken;

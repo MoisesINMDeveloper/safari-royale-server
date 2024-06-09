@@ -1,9 +1,9 @@
 import express from "express";
-import authenticateToken from "../middleware/autenticateToken";
+import autenticateToken from "../middleware/autenticateToken";
 import { getUserData } from "../controllers/userDataController";
 
 const router = express.Router();
 
-router.get("/getdatauser", authenticateToken, getUserData);
+router.get("/getdatauser", autenticateToken, getUserData);
 
 export default router;

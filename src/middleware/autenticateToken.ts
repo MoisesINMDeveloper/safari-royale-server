@@ -4,7 +4,7 @@ import userPrisma from "../models/user.prisma";
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
 
-const authenticateToken = async (
+const autenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -33,4 +33,4 @@ const authenticateToken = async (
   }
 };
 
-export default authenticateToken;
+export default autenticateToken;
