@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import prismaUser from "../models/user.prisma";
 
 export const getUserData = async (
@@ -6,23 +7,35 @@ export const getUserData = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Obtener la información del usuario del middleware authenticateToken
-    const user = res.locals.user;
-    if (!user) {
-      res.status(404).json({ error: "Usuario no encontrado" });
+    // Obtener el token del encabezado de autorización
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    // Verificar si existe el token
+    if (!token) {
+      res.status(401).json({ error: "No autorizado" });
       return;
     }
 
-    console.log("User from res.locals:", user); // Verifica si el usuario está siendo obtenido correctamente
+    // Decodificar el token JWT para obtener la información del usuario
+    const decoded: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default-secret"
+    );
 
-    // Obtener los datos del usuario desde la base de datos
+    // Verificar si el token es válido y contiene la información del usuario
+    if (!decoded || !decoded.id) {
+      res.status(403).json({ error: "Token inválido" });
+      return;
+    }
+
+    // Buscar al usuario en la base de datos utilizando el ID obtenido del token
     const userData = await prismaUser.findUnique({
-      where: { id: user.id },
+      where: { id: decoded.id },
       // Incluir aquí cualquier otro modelo que necesites
     });
 
-    console.log("User data from database:", userData); // Verifica los datos del usuario obtenidos de la base de datos
-
+    // Verificar si se encontraron los datos del usuario en la base de datos
     if (!userData) {
       res.status(404).json({ error: "Datos del usuario no encontrados" });
       return;
