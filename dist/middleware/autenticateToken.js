@@ -23,21 +23,20 @@ const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
-        if (!decoded || !decoded.id) {
-            return res.status(403).json({ error: "Token inválido" });
-        }
         const user = yield user_prisma_1.default.findUnique({
             where: { id: decoded.id },
         });
         if (!user) {
-            return res.status(403).json({ error: "Usuario no encontrado" });
+            return res
+                .status(403)
+                .json({ error: "No tienes acceso a este recurso." });
         }
         // Almacenamos la información del usuario en res.locals para que esté disponible para los controladores
         res.locals.user = user;
         next();
     }
     catch (err) {
-        console.error("Error en la autenticación:", err);
+        console.log("Error en la autenticacion:", err);
         return res.status(403).json({ error: "No tienes acceso a este recurso." });
     }
 });
