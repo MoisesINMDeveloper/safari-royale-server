@@ -25,12 +25,18 @@ const authenticateToken = async (
         .status(403)
         .json({ error: "No tienes acceso a este recurso." });
     }
-    // Almacenamos la información del usuario en res.locals para que esté disponible para los controladores
     res.locals.user = user;
     next();
-  } catch (err) {
-    console.log("Error en la autenticacion:", err);
-    return res.status(403).json({ error: "No tienes acceso a este recurso." });
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(403).json({ error: "El token ha expirado." });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(403).json({ error: "Firma de token inválida." });
+    } else {
+      return res
+        .status(403)
+        .json({ error: "No tienes acceso a este recurso." });
+    }
   }
 };
 
