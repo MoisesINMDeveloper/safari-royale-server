@@ -35,8 +35,12 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         const verificationCode = VerifyCodeGenerate(); // Genera un código de verificación de 6 dígitos
         (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
+        // Generar el token para el usuario registrado
+        const token = (0, auth_service_1.generateToken)(user);
+        // Responder con el token y el mensaje
         res.status(201).json({
             message: "User registered successfully. Please verify your email.",
+            token: token,
         });
         // Almacena el código de verificación temporalmente
         almacenarCodigoVerificacion(user.email, verificationCode);
@@ -134,9 +138,23 @@ const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             where: { email },
             data: { verified: true },
         });
+        // Generar el token para el usuario verificado
+        const token = (0, auth_service_1.generateToken)(user);
         // Eliminar el código de verificación almacenado
         delete verificationCodes[email];
-        res.status(200).json({ message: "Email verified successfully." });
+        // Crear el objeto de usuario para enviar en la respuesta, excluyendo la contraseña
+        const userToSend = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            verified: true,
+            token: token,
+        };
+        res.status(200).json({
+            message: "Email verified successfully.",
+            user: userToSend,
+        });
     }
     catch (error) {
         console.error("Verification error:", error);
