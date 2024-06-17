@@ -1,5 +1,4 @@
 import express from "express";
-import autenticateToken from "../middleware/autenticateToken";
 import {
   createBank,
   getAllBanks,
@@ -11,18 +10,18 @@ import {
 const router = express.Router();
 
 // Ruta para crear un nuevo banco
-router.post("/", autenticateToken, createBank);
+router.post("/", createBank);
 
 // Ruta para obtener todos los bancos
-router.get("/", autenticateToken, getAllBanks);
+router.get("/", getAllBanks);
 
 // Ruta para obtener un banco por su ID
-router.get("/:id", autenticateToken, getBankById);
+router.get("/:id", getBankById);
 
 // Ruta para actualizar un banco por su ID
-router.put("/:id", autenticateToken, updateBank);
+router.put("/:id", updateBank);
 
 // Ruta para eliminar un banco por su ID
-router.delete("/:id", autenticateToken, deleteBank);
+router.delete("/:id", deleteBank);
 
 export default router;

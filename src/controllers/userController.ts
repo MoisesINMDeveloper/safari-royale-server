@@ -18,6 +18,7 @@ export const createUser = async (
       bankName,
       phoneCode,
       verified,
+      balance,
     } = req.body;
 
     if (
@@ -29,7 +30,8 @@ export const createUser = async (
       !verified ||
       !phone ||
       !bankName ||
-      !phoneCode
+      !phoneCode ||
+      !balance
     ) {
       res.status(400).json({ message: "Missing required fields" });
       return;
@@ -46,8 +48,8 @@ export const createUser = async (
       verified,
       phone,
       phoneCode: phoneCode,
-
       bankName: bankName,
+      balance,
     };
 
     const user = await userPrisma.create({
@@ -115,6 +117,7 @@ export const updateUser = async (
     bankName,
     phoneCode,
     verified,
+    balance,
     phone,
   } = req.body;
   try {
@@ -145,7 +148,9 @@ export const updateUser = async (
     if (phone !== undefined) {
       dataToUpdate.phone = phone;
     }
-
+    if (balance !== undefined) {
+      dataToUpdate.balance = balance;
+    }
     const updatedUser = await userPrisma.update({
       where: { id: userId },
       data: dataToUpdate,

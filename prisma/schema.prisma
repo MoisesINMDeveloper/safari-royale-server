@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -15,29 +9,98 @@ datasource db {
 }
 
 model User {
-  id         Int     @id @default(autoincrement())
-  username   String  @unique
+  id         Int        @id @default(autoincrement())
+  username   String     @unique
   name       String?
-  email      String  @unique
+  email      String     @unique
   password   String
   dni        String?
   phone      String?
-  verified   Boolean @default(false)
-  bank       Bank?   @relation(fields: [bankName], references: [name])
-  codePhone  Phone?  @relation(fields: [phoneCode], references: [code])
+  verified   Boolean    @default(false)
+  bank       Bank?      @relation(fields: [bankName], references: [name])
+  codePhone  Phone?     @relation(fields: [phoneCode], references: [code])
   bankName   String?
   phoneCode  String?
+  balance    Float      @default(0.0)
+  rafflesWon Raffle[]   @relation("UserRafflesWon")
+  tickets    Ticket[]   @relation("UserTickets")
+  role       UserRole   @default(USER)
 }
 
 model Bank {
-  id     Int    @id @default(autoincrement())
-  name   String @unique
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
   code   String
   users  User[]
 }
 
 model Phone {
-  id     Int    @id @default(autoincrement())
-  code   String @unique
+  id     Int     @id @default(autoincrement())
+  code   String  @unique
   users  User[]
+}
+
+model Animal {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  combinations Combination[] @relation("AnimalCombinations")
+}
+
+model Color {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  combinations Combination[] @relation("ColorCombinations")
+}
+
+model Combination {
+  id                Int          @id @default(autoincrement())
+  animalId          Int
+  animal            Animal       @relation("AnimalCombinations", fields: [animalId], references: [id])
+  colorId           Int
+  color             Color        @relation("ColorCombinations", fields: [colorId], references: [id])
+  raffles           Raffle[]
+  tickets           CombinationOnTicket[]
+
+  animalName        String       @map("animal_name")
+  colorName         String       @map("color_name")
+}
+
+model Raffle {
+  id                 Int          @id @default(autoincrement())
+  date               DateTime
+  time               DateTime
+  winnerUserId       Int?
+  winnerUser         User?        @relation("UserRafflesWon", fields: [winnerUserId], references: [id])
+  winningCombination Combination? @relation(fields: [winningCombinationId], references: [id])
+  tickets            Ticket[]     @relation("RaffleTickets")
+  winningCombinationId Int?
+  status             RaffleStatus
+}
+
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  user        User         @relation("UserTickets", fields: [userId], references: [id])
+  raffleId    Int
+  raffle      Raffle       @relation("RaffleTickets", fields: [raffleId], references: [id])
+  combinations CombinationOnTicket[]
+}
+
+model CombinationOnTicket {
+  ticketId      Int
+  ticket        Ticket     @relation(fields: [ticketId], references: [id])
+  combinationId Int
+  combination   Combination @relation(fields: [combinationId], references: [id])
+
+  @@id([ticketId, combinationId])
+}
+
+enum RaffleStatus {
+  PENDING
+  FINALIZED
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }

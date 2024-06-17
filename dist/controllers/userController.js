@@ -18,7 +18,7 @@ const user_prisma_1 = __importDefault(require("../models/user.prisma"));
 const auth_service_1 = require("../services/auth.service");
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { username, name, email, dni, password, phone, bankName, phoneCode, verified, } = req.body;
+        const { username, name, email, dni, password, phone, bankName, phoneCode, verified, balance, } = req.body;
         if (!username ||
             !name ||
             !email ||
@@ -27,7 +27,8 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             !verified ||
             !phone ||
             !bankName ||
-            !phoneCode) {
+            !phoneCode ||
+            !balance) {
             res.status(400).json({ message: "Missing required fields" });
             return;
         }
@@ -42,6 +43,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             phone,
             phoneCode: phoneCode,
             bankName: bankName,
+            balance,
         };
         const user = yield user_prisma_1.default.create({
             data: userData,
@@ -86,7 +88,7 @@ exports.getUserById = getUserById;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const userId = parseInt(req.params.id);
-    const { username, email, password, dni, bankName, phoneCode, verified, phone, } = req.body;
+    const { username, email, password, dni, bankName, phoneCode, verified, balance, phone, } = req.body;
     try {
         let dataToUpdate = {};
         if (username) {
@@ -113,6 +115,9 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         if (phone !== undefined) {
             dataToUpdate.phone = phone;
+        }
+        if (balance !== undefined) {
+            dataToUpdate.balance = balance;
         }
         const updatedUser = yield user_prisma_1.default.update({
             where: { id: userId },

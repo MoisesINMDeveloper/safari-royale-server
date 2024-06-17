@@ -1,3 +1,4 @@
+process.env.TZ = "UTC";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
