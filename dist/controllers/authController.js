@@ -35,13 +35,25 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name,
                 email,
                 password: hashedPassword,
+                role: "USER", // Asignar el rol por defecto
             },
         });
         const verificationCode = VerifyCodeGenerate();
         (0, email_service_1.sendCodeVerification)(user.email, verificationCode);
         almacenarCodigoVerificacion(user.email, verificationCode);
+        const token = (0, auth_service_1.generateToken)(user); // Generar token con el usuario y rol
+        const userToSend = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: token,
+            verified: user.verified,
+        };
         res.status(201).json({
             message: "User registered successfully. Please verify your email.",
+            user: userToSend,
         });
     }
     catch (error) {
@@ -99,6 +111,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             username: user.username,
             name: user.name,
             email: user.email,
+            role: user.role,
             token: token,
             verified: user.verified,
         };
@@ -146,6 +159,7 @@ const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             username: user.username,
             name: user.name,
             email: user.email,
+            role: user.role,
             token: token,
             verified: true,
         };
