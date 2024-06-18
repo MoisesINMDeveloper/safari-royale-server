@@ -15,13 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyCode = exports.login = exports.register = void 0;
 const password_service_1 = require("../services/password.service");
 const user_prisma_1 = __importDefault(require("../models/user.prisma"));
+const email_service_1 = require("../services/email.service");
 const auth_service_1 = require("../services/auth.service");
-const email_service_1 = require("../services/email.service"); // Importa la función de envío de correo electrónico
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
-    const { username, email, password } = req.body;
+    const { username, name, email, password } = req.body;
     try {
-        if (!username || !email || !password) {
+        if (!username || !name || !email || !password) {
             res.status(400).json({ message: "Missing required fields" });
             return;
         }
@@ -29,21 +29,18 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield user_prisma_1.default.create({
             data: {
                 username,
+                name,
                 email,
                 password: hashedPassword,
             },
         });
-        const verificationCode = VerifyCodeGenerate(); // Genera un código de verificación de 6 dígitos
-        (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
-        // Generar el token para el usuario registrado
-        const token = (0, auth_service_1.generateToken)(user);
+        const verificationCode = VerifyCodeGenerate();
+        (0, email_service_1.sendCodeVerification)(user.email, verificationCode);
+        res.status(201).json({
+            message: "User registered successfully. Please verify your email.",
+        });
         // Almacena el código de verificación temporalmente
         almacenarCodigoVerificacion(user.email, verificationCode);
-        // Enviar el token en el header y el mensaje en el cuerpo
-        res.status(201).header("Authorization", `Bearer ${token}`).json({
-            message: "User registered successfully. Please verify your email.",
-            role: user.role, // Suponiendo que el rol está disponible en el objeto usuario
-        });
     }
     catch (error) {
         console.error("Registration error:", error);
@@ -82,7 +79,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         // Verifica si el usuario está verificado
         if (!user.verified) {
-            // Si el usuario no está verificado, genera un nuevo código de verificación y envíalo por correo electrónico
+            // Si el usuario no está verificado, genera un nuevo código de verificación y se envia por correo electrónico
             const verificationCode = VerifyCodeGenerate();
             (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
             almacenarCodigoVerificacion(user.email, verificationCode); // Almacena el código de verificación temporalmente
@@ -99,14 +96,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             username: user.username,
             name: user.name,
             email: user.email,
-            dni: user.dni,
+            token: token,
             verified: user.verified,
-            bankName: user.bankName,
-            phoneCode: user.phoneCode,
-            role: user.role, // Añadir rol
         };
-        // Enviar el token en el header y el usuario en el cuerpo de la respuesta
-        res.status(200).header("Authorization", `Bearer ${token}`).json(userToSend);
+        res.status(200).json(userToSend);
     }
     catch (error) {
         console.log("error: ", error);
@@ -149,14 +142,12 @@ const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             username: user.username,
             name: user.name,
             email: user.email,
+            token: token,
             verified: true,
-            role: user.role, // Añadir rol
         };
-        // Enviar el token en el header y el usuario en el cuerpo de la respuesta
-        res.status(200).header("Authorization", `Bearer ${token}`).json({
-            message: "Email verified successfully.",
-            user: userToSend,
-        });
+        res
+            .status(200)
+            .json({ message: "Email verified successfully.", user: userToSend });
     }
     catch (error) {
         console.error("Verification error:", error);

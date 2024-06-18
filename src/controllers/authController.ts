@@ -1,41 +1,32 @@
 import { Request, Response } from "express";
 import { comparePassword, hashPassword } from "../services/password.service";
-import prismaUser from "../models/user.prisma";
+import prisma from "../models/user.prisma";
+import { sendCodeVerification } from "../services/email.service";
 import { generateToken } from "../services/auth.service";
-import { sendCodeVerification } from "../services/email.service"; // Importa la función de envío de correo electrónico
-
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, password } = req.body;
+  const { username, name, email, password } = req.body;
   try {
-    if (!username || !email || !password) {
+    if (!username || !name || !email || !password) {
       res.status(400).json({ message: "Missing required fields" });
       return;
     }
-
-    const hashedPassword = await hashPassword(password);
-
-    const user = await prismaUser.create({
+    const hashedPassword: string = await hashPassword(password);
+    const user = await prisma.create({
       data: {
         username,
+        name,
         email,
         password: hashedPassword,
       },
     });
-
-    const verificationCode: any = VerifyCodeGenerate(); // Genera un código de verificación de 6 dígitos
-    sendCodeVerification(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
-
-    // Generar el token para el usuario registrado
-    const token = generateToken(user);
+    const verificationCode: any = VerifyCodeGenerate();
+    sendCodeVerification(user.email, verificationCode);
+    res.status(201).json({
+      message: "User registered successfully. Please verify your email.",
+    });
 
     // Almacena el código de verificación temporalmente
     almacenarCodigoVerificacion(user.email, verificationCode);
-
-    // Enviar el token en el header y el mensaje en el cuerpo
-    res.status(201).header("Authorization", `Bearer ${token}`).json({
-      message: "User registered successfully. Please verify your email.",
-      role: user.role, // Suponiendo que el rol está disponible en el objeto usuario
-    });
   } catch (error: any) {
     console.error("Registration error:", error);
 
@@ -48,7 +39,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(statusCode).json({ error: errorMessage });
   }
 };
-
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
@@ -60,7 +50,7 @@ export const login = async (req: Request, res: Response) => {
       res.status(400).json({ message: "The password is required" });
       return;
     }
-    const user = await prismaUser.findUnique({ where: { email } });
+    const user = await prisma.findUnique({ where: { email } });
     if (!user) {
       res.status(404).json({ error: "User not found." });
       return;
@@ -74,7 +64,7 @@ export const login = async (req: Request, res: Response) => {
     }
     // Verifica si el usuario está verificado
     if (!user.verified) {
-      // Si el usuario no está verificado, genera un nuevo código de verificación y envíalo por correo electrónico
+      // Si el usuario no está verificado, genera un nuevo código de verificación y se envia por correo electrónico
       const verificationCode: any = VerifyCodeGenerate();
       sendCodeVerification(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
       almacenarCodigoVerificacion(user.email, verificationCode); // Almacena el código de verificación temporalmente
@@ -93,15 +83,10 @@ export const login = async (req: Request, res: Response) => {
       username: user.username,
       name: user.name,
       email: user.email,
-      dni: user.dni,
+      token: token,
       verified: user.verified,
-      bankName: user.bankName,
-      phoneCode: user.phoneCode,
-      role: user.role, // Añadir rol
     };
-
-    // Enviar el token en el header y el usuario en el cuerpo de la respuesta
-    res.status(200).header("Authorization", `Bearer ${token}`).json(userToSend);
+    res.status(200).json(userToSend);
   } catch (error) {
     console.log("error: ", error);
     res.status(500).json({ error: "Internal server error" });
@@ -115,7 +100,7 @@ export const verifyCode = async (
   const { email, verificationCode } = req.body;
   try {
     // Verificar si el usuario existe en la base de datos
-    const user = await prismaUser.findUnique({ where: { email } });
+    const user = await prisma.findUnique({ where: { email } });
     if (!user) {
       res.status(404).json({ error: "User not found." });
       return;
@@ -135,7 +120,7 @@ export const verifyCode = async (
     }
 
     // Actualizar el estado de verificación del usuario en la base de datos
-    await prismaUser.update({
+    await prisma.update({
       where: { email },
       data: { verified: true },
     });
@@ -152,15 +137,13 @@ export const verifyCode = async (
       username: user.username,
       name: user.name,
       email: user.email,
+      token: token,
       verified: true,
-      role: user.role, // Añadir rol
     };
 
-    // Enviar el token en el header y el usuario en el cuerpo de la respuesta
-    res.status(200).header("Authorization", `Bearer ${token}`).json({
-      message: "Email verified successfully.",
-      user: userToSend,
-    });
+    res
+      .status(200)
+      .json({ message: "Email verified successfully.", user: userToSend });
   } catch (error: any) {
     console.error("Verification error:", error);
     res.status(500).json({ error: "Error verifying email" });
