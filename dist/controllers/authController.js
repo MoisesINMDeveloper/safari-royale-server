@@ -17,6 +17,9 @@ const password_service_1 = require("../services/password.service");
 const user_prisma_1 = __importDefault(require("../models/user.prisma"));
 const email_service_1 = require("../services/email.service");
 const auth_service_1 = require("../services/auth.service");
+// Definir un mapa para almacenar temporalmente los códigos de verificación
+const verificationCodes = {};
+// Controlador para registrar un nuevo usuario
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const { username, name, email, password } = req.body;
@@ -36,11 +39,10 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         const verificationCode = VerifyCodeGenerate();
         (0, email_service_1.sendCodeVerification)(user.email, verificationCode);
+        almacenarCodigoVerificacion(user.email, verificationCode);
         res.status(201).json({
             message: "User registered successfully. Please verify your email.",
         });
-        // Almacena el código de verificación temporalmente
-        almacenarCodigoVerificacion(user.email, verificationCode);
     }
     catch (error) {
         console.error("Registration error:", error);
@@ -54,6 +56,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.register = register;
+// Controlador para iniciar sesión
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
@@ -107,6 +110,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+// Controlador para verificar el código de verificación
 const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, verificationCode } = req.body;
     try {
@@ -155,8 +159,6 @@ const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.verifyCode = verifyCode;
-// Definir un mapa para almacenar temporalmente los códigos de verificación
-const verificationCodes = {};
 // Función para generar un código de verificación de 6 dígitos
 function VerifyCodeGenerate() {
     return Math.floor(100000 + Math.random() * 900000).toString(); // Genera un número aleatorio de 6 dígitos como cadena

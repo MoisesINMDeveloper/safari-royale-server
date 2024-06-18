@@ -3,6 +3,11 @@ import { comparePassword, hashPassword } from "../services/password.service";
 import prisma from "../models/user.prisma";
 import { sendCodeVerification } from "../services/email.service";
 import { generateToken } from "../services/auth.service";
+
+// Definir un mapa para almacenar temporalmente los códigos de verificación
+const verificationCodes: Record<string, string> = {};
+
+// Controlador para registrar un nuevo usuario
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { username, name, email, password } = req.body;
   try {
@@ -21,12 +26,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
     const verificationCode: any = VerifyCodeGenerate();
     sendCodeVerification(user.email, verificationCode);
+    almacenarCodigoVerificacion(user.email, verificationCode);
+
     res.status(201).json({
       message: "User registered successfully. Please verify your email.",
     });
-
-    // Almacena el código de verificación temporalmente
-    almacenarCodigoVerificacion(user.email, verificationCode);
   } catch (error: any) {
     console.error("Registration error:", error);
 
@@ -39,7 +43,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(statusCode).json({ error: errorMessage });
   }
 };
-export const login = async (req: Request, res: Response) => {
+
+// Controlador para iniciar sesión
+export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
   try {
     if (!email) {
@@ -93,6 +99,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// Controlador para verificar el código de verificación
 export const verifyCode = async (
   req: Request,
   res: Response
@@ -149,9 +156,6 @@ export const verifyCode = async (
     res.status(500).json({ error: "Error verifying email" });
   }
 };
-
-// Definir un mapa para almacenar temporalmente los códigos de verificación
-const verificationCodes: Record<string, string> = {};
 
 // Función para generar un código de verificación de 6 dígitos
 function VerifyCodeGenerate(): string {
