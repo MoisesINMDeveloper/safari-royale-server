@@ -22,14 +22,27 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         name,
         email,
         password: hashedPassword,
+        role: "USER", // Asignar el rol por defecto
       },
     });
     const verificationCode: any = VerifyCodeGenerate();
     sendCodeVerification(user.email, verificationCode);
     almacenarCodigoVerificacion(user.email, verificationCode);
 
+    const token = generateToken(user); // Generar token con el usuario y rol
+    const userToSend = {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: token,
+      verified: user.verified,
+    };
+
     res.status(201).json({
       message: "User registered successfully. Please verify your email.",
+      user: userToSend,
     });
   } catch (error: any) {
     console.error("Registration error:", error);
@@ -89,6 +102,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       username: user.username,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: token,
       verified: user.verified,
     };
@@ -144,6 +158,7 @@ export const verifyCode = async (
       username: user.username,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: token,
       verified: true,
     };
