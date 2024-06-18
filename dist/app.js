@@ -28,9 +28,9 @@ app.use("/v1/phones", (0, autenticateToken_1.default)("ADMIN"), phoneRoutes_1.de
 app.use("/v1/banks", (0, autenticateToken_1.default)("ADMIN"), bankRoutes_1.default); // Ruta para las operaciones del banco
 app.use("/v1/raffles", (0, autenticateToken_1.default)("ADMIN"), raffleRoutes_1.default);
 app.use("/v1/auth", authRoutes_1.default); // Ruta para la autenticación
-app.use("/v1/tickets", autenticateToken_1.default, ticketRoutes_1.default);
-app.use("/v1/combinations", autenticateToken_1.default, combinationRoutes_1.default);
+app.use("/v1/tickets", (0, autenticateToken_1.default)(), ticketRoutes_1.default);
+app.use("/v1/combinations", (0, autenticateToken_1.default)(), combinationRoutes_1.default);
 app.use("/v1/users", usersRoutes_1.default); // Ruta para las operaciones de los usuarios
-app.use("/v1/auth", getDataUserRoutes_1.default);
+app.use("/v1/auth", (0, autenticateToken_1.default)(), getDataUserRoutes_1.default);
 // Exportar la aplicación Express
 exports.default = app;

@@ -28,14 +28,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Generar el token para el usuario registrado
     const token = generateToken(user);
 
-    // Responder con el token y el mensaje
-    res.status(201).json({
-      message: "User registered successfully. Please verify your email.",
-      token: token,
-    });
-
     // Almacena el código de verificación temporalmente
     almacenarCodigoVerificacion(user.email, verificationCode);
+
+    // Enviar el token en el header y el mensaje en el cuerpo
+    res.status(201).header("Authorization", `Bearer ${token}`).json({
+      message: "User registered successfully. Please verify your email.",
+      role: user.role, // Suponiendo que el rol está disponible en el objeto usuario
+    });
   } catch (error: any) {
     console.error("Registration error:", error);
 
@@ -97,9 +97,11 @@ export const login = async (req: Request, res: Response) => {
       verified: user.verified,
       bankName: user.bankName,
       phoneCode: user.phoneCode,
-      token: token,
+      role: user.role, // Añadir rol
     };
-    res.status(200).json(userToSend);
+
+    // Enviar el token en el header y el usuario en el cuerpo de la respuesta
+    res.status(200).header("Authorization", `Bearer ${token}`).json(userToSend);
   } catch (error) {
     console.log("error: ", error);
     res.status(500).json({ error: "Internal server error" });
@@ -151,10 +153,11 @@ export const verifyCode = async (
       name: user.name,
       email: user.email,
       verified: true,
-      token: token,
+      role: user.role, // Añadir rol
     };
 
-    res.status(200).json({
+    // Enviar el token en el header y el usuario en el cuerpo de la respuesta
+    res.status(200).header("Authorization", `Bearer ${token}`).json({
       message: "Email verified successfully.",
       user: userToSend,
     });

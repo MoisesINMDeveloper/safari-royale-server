@@ -28,10 +28,10 @@ app.use("/v1/phones", authenticateToken("ADMIN"), phoneRoutes); // Ruta para las
 app.use("/v1/banks", authenticateToken("ADMIN"), bankRoutes); // Ruta para las operaciones del banco
 app.use("/v1/raffles", authenticateToken("ADMIN"), raffleRoutes);
 app.use("/v1/auth", authRoutes); // Ruta para la autenticación
-app.use("/v1/tickets", authenticateToken, ticketsRoutes);
-app.use("/v1/combinations", authenticateToken, combinationRoutes);
+app.use("/v1/tickets", authenticateToken(), ticketsRoutes);
+app.use("/v1/combinations", authenticateToken(), combinationRoutes);
 app.use("/v1/users", usersRoutes); // Ruta para las operaciones de los usuarios
-app.use("/v1/auth", getDataUserRoutes);
+app.use("/v1/auth", authenticateToken(), getDataUserRoutes);
 
 // Exportar la aplicación Express
 export default app;

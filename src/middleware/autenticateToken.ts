@@ -10,6 +10,7 @@ const authenticateToken = (requiredRole?: string) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
+      console.log("No token provided.");
       return res.status(401).json({ error: "No autorizado" });
     }
     try {
@@ -18,11 +19,13 @@ const authenticateToken = (requiredRole?: string) => {
         where: { id: decoded.id },
       });
       if (!user) {
+        console.log("User not found for the given token.");
         return res
           .status(403)
           .json({ error: "No tienes acceso a este recurso." });
       }
       if (requiredRole && user.role !== requiredRole) {
+        console.log("User does not have the required role.");
         return res
           .status(403)
           .json({ error: "No tienes acceso a este recurso." });
@@ -30,6 +33,7 @@ const authenticateToken = (requiredRole?: string) => {
       res.locals.user = user;
       next();
     } catch (error) {
+      console.error("Token verification failed:", error);
       if (error instanceof jwt.TokenExpiredError) {
         return res.status(403).json({ error: "El token ha expirado." });
       } else if (error instanceof jwt.JsonWebTokenError) {

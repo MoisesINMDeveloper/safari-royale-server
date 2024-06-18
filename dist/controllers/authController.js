@@ -37,13 +37,13 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         (0, email_service_1.sendCodeVerification)(user.email, verificationCode); // Envía el código de verificación al correo del usuario registrado
         // Generar el token para el usuario registrado
         const token = (0, auth_service_1.generateToken)(user);
-        // Responder con el token y el mensaje
-        res.status(201).json({
-            message: "User registered successfully. Please verify your email.",
-            token: token,
-        });
         // Almacena el código de verificación temporalmente
         almacenarCodigoVerificacion(user.email, verificationCode);
+        // Enviar el token en el header y el mensaje en el cuerpo
+        res.status(201).header("Authorization", `Bearer ${token}`).json({
+            message: "User registered successfully. Please verify your email.",
+            role: user.role, // Suponiendo que el rol está disponible en el objeto usuario
+        });
     }
     catch (error) {
         console.error("Registration error:", error);
@@ -103,9 +103,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             verified: user.verified,
             bankName: user.bankName,
             phoneCode: user.phoneCode,
-            token: token,
+            role: user.role, // Añadir rol
         };
-        res.status(200).json(userToSend);
+        // Enviar el token en el header y el usuario en el cuerpo de la respuesta
+        res.status(200).header("Authorization", `Bearer ${token}`).json(userToSend);
     }
     catch (error) {
         console.log("error: ", error);
@@ -149,9 +150,10 @@ const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             name: user.name,
             email: user.email,
             verified: true,
-            token: token,
+            role: user.role, // Añadir rol
         };
-        res.status(200).json({
+        // Enviar el token en el header y el usuario en el cuerpo de la respuesta
+        res.status(200).header("Authorization", `Bearer ${token}`).json({
             message: "Email verified successfully.",
             user: userToSend,
         });
