@@ -41,56 +41,55 @@ model Phone {
 }
 
 model Animal {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
   combinations Combination[] @relation("AnimalCombinations")
 }
 
 model Color {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
   combinations Combination[] @relation("ColorCombinations")
 }
 
 model Combination {
-  id                Int          @id @default(autoincrement())
+  id                Int                 @id @default(autoincrement())
   animalId          Int
-  animal            Animal       @relation("AnimalCombinations", fields: [animalId], references: [id])
+  animal            Animal              @relation("AnimalCombinations", fields: [animalId], references: [id])
   colorId           Int
-  color             Color        @relation("ColorCombinations", fields: [colorId], references: [id])
+  color             Color               @relation("ColorCombinations", fields: [colorId], references: [id])
   raffles           Raffle[]
   tickets           CombinationOnTicket[]
 
-  animalName        String       @map("animal_name")
-  colorName         String       @map("color_name")
+  animalName        String              @map("animal_name")
+  colorName         String              @map("color_name")
 }
 
 model Raffle {
-  id                 Int          @id @default(autoincrement())
+  id                 Int                 @id @default(autoincrement())
   date               DateTime
   time               DateTime
-  winnerUserId       Int?
-  winnerUser         User?        @relation("UserRafflesWon", fields: [winnerUserId], references: [id])
-  winningCombination Combination? @relation(fields: [winningCombinationId], references: [id])
-  tickets            Ticket[]     @relation("RaffleTickets")
   winningCombinationId Int?
+  winningCombination Combination?       @relation(fields: [winningCombinationId], references: [id])
   status             RaffleStatus
+  tickets            Ticket[]           @relation("RaffleTickets")
+  winners            User[]             @relation("UserRafflesWon")
 }
 
 model Ticket {
-  id          Int          @id @default(autoincrement())
+  id          Int                 @id @default(autoincrement())
   userId      Int
-  user        User         @relation("UserTickets", fields: [userId], references: [id])
+  user        User                @relation("UserTickets", fields: [userId], references: [id])
   raffleId    Int
-  raffle      Raffle       @relation("RaffleTickets", fields: [raffleId], references: [id])
+  raffle      Raffle              @relation("RaffleTickets", fields: [raffleId], references: [id])
   combinations CombinationOnTicket[]
 }
 
 model CombinationOnTicket {
   ticketId      Int
-  ticket        Ticket     @relation(fields: [ticketId], references: [id])
+  ticket        Ticket              @relation(fields: [ticketId], references: [id])
   combinationId Int
-  combination   Combination @relation(fields: [combinationId], references: [id])
+  combination   Combination         @relation(fields: [combinationId], references: [id])
 
   @@id([ticketId, combinationId])
 }

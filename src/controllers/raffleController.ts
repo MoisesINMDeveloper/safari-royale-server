@@ -23,6 +23,16 @@ const formatTime = (time: Date): string => {
   return format(time, "HH:mm:ss");
 };
 
+// Filtra las propiedades no necesarias de los ganadores
+const filterWinnerData = (winners: any[]) => {
+  return winners.map(({ id, username, verified, balance }) => ({
+    id,
+    username,
+    verified,
+    balance,
+  }));
+};
+
 export const createRaffle = async (
   req: Request,
   res: Response
@@ -43,16 +53,11 @@ export const createRaffle = async (
       return;
     }
 
-    // Crear el nuevo raffle con campos opcionales nulos
     const raffle = await prisma.raffle.create({
       data: {
         date: parsedDate,
         time: parsedTime,
         status: status as RaffleStatus,
-        winnerUserId: null,
-        winningCombinationId: null,
-        // animalName: "",
-        // colorName: "",
       },
     });
 
@@ -66,6 +71,7 @@ export const createRaffle = async (
     res.status(500).json({ error: "Error creating raffle" });
   }
 };
+
 export const getRaffles = async (
   req: Request,
   res: Response
@@ -113,18 +119,14 @@ export const updateRaffle = async (
   res: Response
 ): Promise<void> => {
   const raffleId: number = parseInt(req.params.id);
-  const { winnerUserId, winningCombinationId, status } = req.body;
+  const { winningCombinationId, status, winners } = req.body;
 
   try {
     const dataToUpdate: {
-      winnerUserId?: number;
       winningCombinationId?: number;
       status?: RaffleStatus;
-      // animalName?: string;
-      // colorName?: string;
+      winners?: { connect: { id: number }[] };
     } = {};
-
-    if (winnerUserId !== undefined) dataToUpdate.winnerUserId = winnerUserId;
 
     if (winningCombinationId !== undefined) {
       const winningCombination = await prisma.combination.findUnique({
@@ -138,8 +140,27 @@ export const updateRaffle = async (
       }
 
       dataToUpdate.winningCombinationId = winningCombinationId;
-      // dataToUpdate.animalName = winningCombination.animal.name;
-      // dataToUpdate.colorName = winningCombination.color.name;
+
+      const winningTickets = await prisma.ticket.findMany({
+        where: {
+          raffleId: raffleId,
+          combinations: {
+            some: { combinationId: winningCombinationId },
+          },
+        },
+        select: { userId: true },
+      });
+
+      if (winningTickets.length > 0) {
+        dataToUpdate.winners = {
+          connect: winningTickets.map((ticket) => ({ id: ticket.userId })),
+        };
+      } else {
+        res
+          .status(404)
+          .json({ message: "No users found with the winning combination" });
+        return;
+      }
     }
 
     if (status) dataToUpdate.status = status as RaffleStatus;
@@ -147,12 +168,16 @@ export const updateRaffle = async (
     const updatedRaffle = await prisma.raffle.update({
       where: { id: raffleId },
       data: dataToUpdate,
+      include: { winners: true },
     });
+
+    const filteredWinners = filterWinnerData(updatedRaffle.winners);
 
     res.status(200).json({
       ...updatedRaffle,
       date: formatDate(updatedRaffle.date),
       time: formatTime(updatedRaffle.time),
+      winners: filteredWinners,
     });
   } catch (error: any) {
     if (error?.code === "P2025") {
