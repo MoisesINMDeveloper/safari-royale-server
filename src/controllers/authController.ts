@@ -11,7 +11,7 @@ const verificationCodes: Record<string, string> = {};
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { username, name, email, password } = req.body;
   try {
-    if (!username || !name || !email || !password) {
+    if (!username || !email || !password) {
       res.status(400).json({ message: "Missing required fields" });
       return;
     }

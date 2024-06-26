@@ -24,7 +24,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const { username, name, email, password } = req.body;
     try {
-        if (!username || !name || !email || !password) {
+        if (!username || !email || !password) {
             res.status(400).json({ message: "Missing required fields" });
             return;
         }
