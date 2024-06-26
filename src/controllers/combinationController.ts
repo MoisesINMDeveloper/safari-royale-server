@@ -15,6 +15,21 @@ export const createCombination = async (
   }
 
   try {
+    // Verificar si la combinación ya existe
+    const existingCombination = await prisma.combination.findFirst({
+      where: { animalId: animalId, colorId: colorId },
+    });
+
+    if (existingCombination) {
+      // Si la combinación existe, devolverla
+      res.status(200).json({
+        id: existingCombination.id,
+        animal: existingCombination.animalId,
+        color: existingCombination.colorId,
+      });
+      return;
+    }
+
     // Obtener los nombres del animal y del color
     const animal = await prisma.animal.findUnique({ where: { id: animalId } });
     const color = await prisma.color.findUnique({ where: { id: colorId } });
@@ -24,6 +39,7 @@ export const createCombination = async (
       return;
     }
 
+    // Crear la nueva combinación
     const newCombination = await prisma.combination.create({
       data: {
         animalId: animalId,
