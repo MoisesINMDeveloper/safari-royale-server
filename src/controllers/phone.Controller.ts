@@ -11,11 +11,21 @@ export const createPhone = async (
       res.status(400).json({ error: `The code is required` });
       return;
     }
-    const phone = await prisma.create({
-      data: {
-        code,
-      },
+
+    // Verificar si el teléfono ya existe
+    let phone = await prisma.findUnique({
+      where: { code },
     });
+
+    if (!phone) {
+      // Crear el teléfono si no existe
+      phone = await prisma.create({
+        data: {
+          code,
+        },
+      });
+    }
+
     res.status(201).json(phone);
   } catch (error) {
     console.error(error);

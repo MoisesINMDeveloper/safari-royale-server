@@ -13,9 +13,19 @@ export const createAnimal = async (
       res.status(400).json({ message: "Missing required fields" });
       return;
     }
-    const animal = await prisma.animal.create({
-      data: { name },
+
+    // Verificar si el animal ya existe
+    let animal = await prisma.animal.findUnique({
+      where: { name },
     });
+
+    if (!animal) {
+      // Crear el animal si no existe
+      animal = await prisma.animal.create({
+        data: { name },
+      });
+    }
+
     res.status(201).json(animal);
   } catch (error) {
     console.error("Error creating animal:", error);

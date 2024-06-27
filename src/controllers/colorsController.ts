@@ -13,9 +13,19 @@ export const createColor = async (
       res.status(400).json({ message: "Missing required fields" });
       return;
     }
-    const color = await prisma.color.create({
-      data: { name },
+
+    // Verificar si el color ya existe
+    let color = await prisma.color.findUnique({
+      where: { name },
     });
+
+    if (!color) {
+      // Crear el color si no existe
+      color = await prisma.color.create({
+        data: { name },
+      });
+    }
+
     res.status(201).json(color);
   } catch (error) {
     console.error("Error creating color:", error);

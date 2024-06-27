@@ -13,13 +13,21 @@ export const createBank = async (
       return;
     }
 
-    const bank = await prisma.create({
-      data: {
-        id,
-        name,
-        code,
-      },
+    // Verificar si el banco ya existe
+    let bank = await prisma.findFirst({
+      where: { code },
     });
+
+    if (!bank) {
+      // Crear el banco si no existe
+      bank = await prisma.create({
+        data: {
+          id,
+          name,
+          code,
+        },
+      });
+    }
 
     res.status(201).json(bank);
   } catch (error) {
@@ -33,13 +41,14 @@ export const getAllBanks = async (
   res: Response
 ): Promise<void> => {
   try {
-    const bank = await prisma.findMany();
-    res.status(200).json(bank);
+    const banks = await prisma.findMany();
+    res.status(200).json(banks);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "There was an error try later." });
   }
 };
+
 export const getBankById = async (
   req: Request,
   res: Response
@@ -57,11 +66,12 @@ export const getBankById = async (
     res.status(500).json({ error: "There was an error try later." });
   }
 };
+
 export const updateBank = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const user_id: number = parseInt(req.params.id);
+  const bank_id: number = parseInt(req.params.id);
   const { code, name } = req.body;
   try {
     let dataToUpdate = { ...req.body };
@@ -73,18 +83,17 @@ export const updateBank = async (
     }
     const bank = await prisma.update({
       where: {
-        id: user_id,
+        id: bank_id,
       },
       data: dataToUpdate,
     });
     res.status(200).json(bank);
   } catch (error: any) {
-    if (error) {
-      console.log(error);
-      res.status(500).json({ error: "There was an error, try later" });
-    }
+    console.log(error);
+    res.status(500).json({ error: "There was an error, try later" });
   }
 };
+
 export const deleteBank = async (
   req: Request,
   res: Response
@@ -92,7 +101,7 @@ export const deleteBank = async (
   const bank_id: number = parseInt(req.params.id);
   try {
     await prisma.delete({ where: { id: bank_id } });
-    res.status(200).json({ message: `The ${bank_id} has been deleted` });
+    res.status(200).json({ message: `The bank ${bank_id} has been deleted` });
   } catch (error: any) {
     if (error?.code === "P2025") {
       res.status(404).json("Bank not found");
